@@ -94,3 +94,7 @@ reigner-ui/
 
 - [Reigner](https://github.com/Construct-Lab/reigner): the agent harness this client talks to
 - [Reigner documentation](https://construct-lab.github.io/reigner/)
+
+## License
+
+MIT. See [LICENSE](LICENSE).
