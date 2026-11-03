@@ -1,0 +1,620 @@
+<!doctype html>
+<html lang="en">
+    <head>
+        <meta charset="utf-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>Reigner UI v1 — Implementation plan</title>
+        <style>
+            :root {
+                --bg: #f5f0e1;
+                --paper: #fbf8ec;
+                --paper-soft: #f1ead5;
+                --ink: #1a2e1f;
+                --ink-soft: #5a6b5a;
+                --accent: #b4541a;
+                --rule: #d8cfb4;
+                --dash: #b9b29a;
+                --tag-bg: #ece5d0;
+                --op-add: #2d5938;
+                --op-mod: #856104;
+                --op-del: #8a3320;
+            }
+            * { box-sizing: border-box; }
+            html, body {
+                margin: 0;
+                background: var(--bg);
+                color: var(--ink);
+                font-family: "Iowan Old Style", "Palatino Linotype", Palatino, Georgia, serif;
+                font-size: 17px;
+                line-height: 1.55;
+            }
+            .page { max-width: 820px; margin: 0 auto; padding: 40px 24px 96px; }
+
+            .eyebrow {
+                font-family: ui-monospace, "JetBrains Mono", Menlo, monospace;
+                font-size: 11px; letter-spacing: 0.12em;
+                text-transform: uppercase; color: var(--ink-soft);
+            }
+            h1 {
+                font-size: 40px; line-height: 1.15;
+                margin: 6px 0 20px; font-weight: 600; color: var(--ink);
+                letter-spacing: -0.01em;
+            }
+            h2 { font-size: 26px; margin: 0; font-weight: 600; color: var(--ink); letter-spacing: -0.005em; }
+            h3 { font-size: 17px; margin: 0 0 4px; font-weight: 600; color: var(--ink); }
+            p { margin: 8px 0; }
+            code { font-family: ui-monospace, "JetBrains Mono", Menlo, monospace; font-size: 0.92em; }
+
+            .prompt-box {
+                background: var(--paper-soft);
+                border: 1px solid var(--rule);
+                border-radius: 10px;
+                padding: 16px 18px;
+                margin: 20px 0 36px;
+            }
+            .prompt-box .plabel {
+                font-family: ui-monospace, Menlo, monospace;
+                font-size: 11px; letter-spacing: 0.12em;
+                text-transform: uppercase; color: var(--accent);
+                margin-bottom: 6px;
+            }
+            .prompt-box p { margin: 0; color: var(--ink); font-size: 16px; }
+
+            .bubbles {
+                display: grid;
+                grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+                gap: 12px; margin: 24px 0 56px;
+            }
+            .bubble { background: #fff; border: 1px solid var(--rule); border-radius: 8px; padding: 14px 16px; }
+            .bubble .label {
+                font-family: ui-monospace, Menlo, monospace;
+                font-size: 10px; letter-spacing: 0.12em;
+                text-transform: uppercase; color: var(--ink-soft);
+            }
+            .bubble .value { font-family: ui-monospace, Menlo, monospace; font-size: 18px; font-weight: 500; margin-top: 4px; color: var(--ink); }
+
+            section { margin: 56px 0; }
+            .section-head { display: flex; align-items: center; gap: 12px; margin-bottom: 6px; }
+            .section-num {
+                font-family: ui-monospace, Menlo, monospace;
+                color: var(--ink-soft);
+                font-size: 11px; letter-spacing: 0.08em;
+                background: var(--tag-bg);
+                border-radius: 4px; padding: 2px 7px;
+            }
+            section > p:first-of-type { color: var(--ink-soft); margin: 4px 0 24px; }
+
+            .timeline { margin-top: 8px; }
+            .milestone { display: grid; grid-template-columns: 130px 28px 1fr; gap: 14px; padding-bottom: 28px; position: relative; }
+            .milestone .when { font-family: ui-monospace, Menlo, monospace; font-size: 12px; letter-spacing: 0.04em; color: var(--ink-soft); padding-top: 4px; text-align: right; }
+            .milestone .rail { position: relative; display: flex; justify-content: center; }
+            .milestone .rail::before { content: ""; position: absolute; top: 0; bottom: -28px; left: 50%; width: 1px; background: var(--rule); transform: translateX(-0.5px); }
+            .milestone:last-child .rail::before { bottom: 0; }
+            .milestone .dot { position: relative; z-index: 1; width: 11px; height: 11px; border-radius: 50%; margin-top: 8px; background: var(--op-add); border: 2px solid var(--op-add); }
+            .milestone.upcoming .dot { background: var(--bg); border: 2px solid var(--accent); }
+            .milestone .body { padding-top: 2px; }
+            .milestone .body ul { margin: 6px 0 0; padding-left: 18px; font-size: 15px; }
+            .milestone .body li { margin: 2px 0; }
+            .milestone .done { font-size: 15px; color: var(--ink-soft); margin-top: 6px; }
+            .tags { margin-top: 10px; display: flex; flex-wrap: wrap; gap: 6px; }
+            .tag { font-family: ui-monospace, Menlo, monospace; font-size: 11px; background: var(--tag-bg); border: 1px solid var(--rule); padding: 2px 8px; border-radius: 4px; color: var(--ink); }
+
+            .flow { background: var(--paper); border: 1px solid var(--rule); border-radius: 12px; padding: 22px; overflow-x: auto; }
+            .flow svg { width: 100%; min-width: 640px; height: auto; display: block; }
+            .legend { font-family: ui-monospace, Menlo, monospace; font-size: 12px; color: var(--ink-soft); margin-top: 12px; }
+
+            .mock { background: var(--paper); border: 1px solid var(--rule); border-radius: 12px; padding: 20px; margin: 16px 0; }
+            .mock h3 { margin-bottom: 12px; }
+
+            /* Lo-fi mockup pieces */
+            .lf { font-family: ui-monospace, Menlo, monospace; font-size: 11px; color: var(--ink); }
+            .lf-shell { display: grid; grid-template-columns: 150px 1fr 140px; border: 1.5px solid var(--ink); border-radius: 6px; min-height: 300px; background: #fff; overflow: hidden; }
+            .lf-col { padding: 8px; }
+            .lf-col + .lf-col { border-left: 1px solid var(--rule); }
+            .lf-box { border: 1px solid var(--dash); border-radius: 4px; padding: 6px 7px; margin-bottom: 6px; background: var(--paper); }
+            .lf-box.hi { border-color: var(--ink); }
+            .lf-n { display: inline-block; font-size: 10px; background: var(--tag-bg); border-radius: 3px; padding: 0 4px; margin-right: 4px; color: var(--ink-soft); }
+            .lf-mid { display: flex; flex-direction: column; }
+            .lf-mid .grow { flex: 1; }
+            .lf-dim { color: var(--ink-soft); }
+            .lf-dialog { max-width: 360px; margin: 0 auto; border: 1.5px solid var(--ink); border-radius: 6px; background: #fff; padding: 12px; }
+            .lf-input { border: 1px solid var(--dash); border-radius: 3px; padding: 5px 6px; margin: 4px 0 8px; background: var(--paper); }
+            .lf-warn { border-left: 3px solid var(--op-del); padding: 5px 7px; background: #f6e6df; margin-bottom: 8px; }
+            .lf-btns { display: flex; justify-content: flex-end; gap: 6px; }
+            .lf-btn { border: 1px solid var(--ink); border-radius: 3px; padding: 3px 8px; }
+            .lf-btn.p { background: var(--ink); color: #fff; }
+            @media (max-width: 640px) { .lf-shell { grid-template-columns: 1fr; } .lf-col + .lf-col { border-left: 0; border-top: 1px solid var(--rule); } }
+
+            .files { display: grid; grid-template-columns: 1fr; gap: 0; }
+            .file-group { font-family: ui-monospace, Menlo, monospace; font-size: 11px; letter-spacing: 0.08em; color: var(--ink-soft); margin: 22px 0 2px; }
+            .file-row { display: grid; grid-template-columns: 80px 1fr; gap: 12px; align-items: baseline; border-bottom: 1px dashed var(--dash); padding: 10px 0; }
+            .file-op { font-family: ui-monospace, Menlo, monospace; font-size: 11px; letter-spacing: 0.08em; text-transform: uppercase; }
+            .op-add { color: var(--op-add); }
+            .op-mod { color: var(--op-mod); }
+            .op-del { color: var(--op-del); }
+            .file-path { font-family: ui-monospace, Menlo, monospace; font-size: 14px; color: var(--ink); }
+            .file-note { color: var(--ink-soft); font-size: 14px; margin-top: 3px; display: block; }
+
+            pre.code { background: var(--paper); border: 1px solid var(--rule); border-radius: 8px; padding: 14px 16px; overflow-x: auto; font-family: ui-monospace, Menlo, monospace; font-size: 13px; line-height: 1.55; color: var(--ink); }
+            .code-caption { font-family: ui-monospace, Menlo, monospace; font-size: 12px; color: var(--ink-soft); margin: 18px 0 6px; }
+            .kw { color: var(--accent); }
+            .fn { color: #2d5938; }
+            .str { color: #856104; }
+            .cm { color: var(--ink-soft); }
+
+            .future-item { border-top: 1px solid var(--rule); padding: 16px 0; }
+            .future-item:last-child { border-bottom: 1px solid var(--rule); }
+            .future-item .meta { font-family: ui-monospace, Menlo, monospace; font-size: 11px; letter-spacing: 0.04em; color: var(--ink-soft); margin-top: 6px; }
+
+            .node { fill: var(--paper); stroke: var(--ink); stroke-width: 2.5; }
+            .node-new { fill: var(--paper); stroke: var(--accent); stroke-width: 2.5; }
+            .node-label { font-family: ui-monospace, Menlo, monospace; font-size: 12px; fill: var(--ink); }
+            .node-sub { font-family: ui-monospace, Menlo, monospace; font-size: 10px; fill: var(--ink-soft); }
+            .stroke-solid { stroke: var(--ink); stroke-width: 2; fill: none; }
+            .stroke-dash { stroke: var(--ink); stroke-width: 2; fill: none; stroke-dasharray: 6 5; }
+            .edge-label { font-family: ui-monospace, Menlo, monospace; font-size: 10px; fill: var(--ink-soft); }
+            .col-label { font-family: ui-monospace, Menlo, monospace; font-size: 10px; fill: var(--ink-soft); letter-spacing: 0.1em; }
+
+            @media (max-width: 640px) {
+                .milestone { grid-template-columns: 90px 22px 1fr; gap: 10px; }
+                h1 { font-size: 32px; }
+                h2 { font-size: 22px; }
+            }
+        </style>
+    </head>
+    <body>
+        <div class="page">
+            <div class="eyebrow">Implementation plan · reigner-ui</div>
+            <h1>Reigner UI v1, in five slices</h1>
+
+            <div class="prompt-box">
+                <div class="plabel">Prompt</div>
+                <p>Build a clean, minimal but beautiful chat client for Reigner that people can point at their own <code>reigner serve --http</code> server, and that doubles as a reference for anyone building their own Reigner frontend. Users can add several backends, have them persist, switch between them, and see which are unreachable. Build it in working slices rather than a static mockup first, and plan all the slices before writing code.</p>
+            </div>
+
+            <div class="bubbles">
+                <div class="bubble"><div class="label">Effort</div><div class="value">~8–10 days</div></div>
+                <div class="bubble"><div class="label">Files added</div><div class="value">~30</div></div>
+                <div class="bubble"><div class="label">Files updated</div><div class="value">7</div></div>
+                <div class="bubble"><div class="label">New runtime deps</div><div class="value">3</div></div>
+                <div class="bubble"><div class="label">New dev deps</div><div class="value">1 (vitest)</div></div>
+                <div class="bubble"><div class="label">Paid LLM calls</div><div class="value">slice 4 only</div></div>
+            </div>
+
+            <!-- 01 MILESTONES -->
+            <section>
+                <div class="section-head">
+                    <span class="section-num">01</span>
+                    <h2>Milestones</h2>
+                </div>
+                <p>Each slice works end to end against <code>dev/indialaw</code> and lands as its own commit or PR. Slices 1–3 use free endpoints only: saved sessions are replayed, never re-run.</p>
+
+                <div class="timeline">
+                    <div class="milestone">
+                        <div class="when">Slice 1 · 1–2 days</div>
+                        <div class="rail"><div class="dot"></div></div>
+                        <div class="body">
+                            <h3>Event layer, no UI</h3>
+                            <p>The part other developers will copy. Plain TypeScript with no React imports.</p>
+                            <ul>
+                                <li>Event types written from <code>reigner/harness/events.py</code>, schema version 2.</li>
+                                <li>A <code>ReignerClient</code> for <code>/health</code>, <code>/sessions</code>, <code>/sessions/{id}/events</code> and a streaming <code>run()</code> over <code>fetch</code>.</li>
+                                <li>A pure reducer that groups events into rounds: pairs calls and results by <code>call_id</code>, dedupes citations, marks rounds done, asked-to-clarify, failed or interrupted.</li>
+                                <li>A port of <code>_tool_summary.py</code> for one-line step summaries.</li>
+                                <li>Vitest, with fixtures taken from real <code>dev/indialaw</code> sessions and the captured SSE run.</li>
+                            </ul>
+                            <div class="done">Done when: <code>npm test</code> passes, and every saved session in <code>dev/indialaw</code> reduces with no unknown-state rounds.</div>
+                            <div class="tags">
+                                <span class="tag">src/reigner/</span>
+                                <span class="tag">vitest</span>
+                                <span class="tag">eventsource-parser</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="milestone upcoming">
+                        <div class="when">Slice 2 · 1 day</div>
+                        <div class="rail"><div class="dot"></div></div>
+                        <div class="body">
+                            <h3>Backends and the app shell</h3>
+                            <p>The three-column layout from the mockup, with the backend switcher working for real.</p>
+                            <ul>
+                                <li>Saved backends in <code>localStorage</code>: URL, optional name, last seen.</li>
+                                <li><code>/health</code> polled every 10s per backend, with a 4s timeout. Shows agent name, model, online or unreachable.</li>
+                                <li>Add backend dialog: normalizes the URL, probes it, and on failure shows the exact <code>--cors-origin</code> command for this page's origin. "Save anyway" for servers that are down right now.</li>
+                                <li>First run with no backends: an empty state that opens the dialog prefilled with <code>http://localhost:8000</code>.</li>
+                            </ul>
+                            <div class="done">Done when: indialaw on <code>:8000</code> and indialaw_v1 on <code>:8001</code> can be added, switched, and one shows unreachable when stopped.</div>
+                            <div class="tags">
+                                <span class="tag">src/backends/</span>
+                                <span class="tag">src/components/shell</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="milestone upcoming">
+                        <div class="when">Slice 3 · 2–3 days</div>
+                        <div class="rail"><div class="dot"></div></div>
+                        <div class="body">
+                            <h3>Sessions and the read-only conversation</h3>
+                            <p>Most of the mockup gets built here, fed by free replays.</p>
+                            <ul>
+                                <li>Routes: <code>/b/:backendId</code> and <code>/b/:backendId/s/:sessionId</code>, so reload and deep links work.</li>
+                                <li>Sidebar: sessions sorted by <code>last_updated</code>, grouped Today / Yesterday / Previous 7 days / Older, forks indented under their parent, search over titles.</li>
+                                <li>Titles from each session's first question, fetched lazily and cached per backend.</li>
+                                <li>Conversation: question, collapsed activity trace, Markdown answer, numbered sources, clarification card, inline errors, "interrupted" marker, token line.</li>
+                                <li>Side panel for a source (value, artifact, locator, raw event) or a step (args and result JSON).</li>
+                            </ul>
+                            <div class="done">Done when: every indialaw session opens from the sidebar and from a pasted URL, and looks like the mockup.</div>
+                            <div class="tags">
+                                <span class="tag">src/sessions/</span>
+                                <span class="tag">src/components/thread</span>
+                                <span class="tag">react-markdown</span>
+                                <span class="tag">wouter</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="milestone upcoming">
+                        <div class="when">Slice 4 · 2 days</div>
+                        <div class="rail"><div class="dot"></div></div>
+                        <div class="body">
+                            <h3>Asking questions live</h3>
+                            <p>The composer and streaming. The only slice that needs paid runs, and I'll ask before each one.</p>
+                            <ul>
+                                <li>Send with Enter, new line with Shift+Enter. New sessions read <code>session_id</code> from the first frame and move to its URL.</li>
+                                <li>Live trace with a spinner per pending step and an elapsed timer. Stop cancels the request.</li>
+                                <li>Runs are tracked per session, so switching sessions mid-run is safe and the composer locks only on the session that's running.</li>
+                                <li>Clarification chips send their text as the next question in the same session.</li>
+                                <li>HTTP errors before the stream (404, 422, network) as toasts. Error frames during the stream inline in the round.</li>
+                                <li>Session list refreshes after each run.</li>
+                            </ul>
+                            <div class="done">Done when: about 3 paid test runs cover a new session, a follow-up, and a stopped run.</div>
+                            <div class="tags">
+                                <span class="tag">src/runs/</span>
+                                <span class="tag">src/components/composer</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="milestone upcoming">
+                        <div class="when">Slice 5 · 2 days</div>
+                        <div class="rail"><div class="dot"></div></div>
+                        <div class="body">
+                            <h3>Finishing</h3>
+                            <ul>
+                                <li>Light, dark and system theme toggle, remembered per browser.</li>
+                                <li>Verbose mode: shows hidden pseudo-tools, <code>seq</code> / <code>turn</code>, and compaction details.</li>
+                                <li>Profile selector (<code>full</code> / <code>read_only</code> / <code>eval</code>) on new sessions only.</li>
+                                <li>Phone layout: the sidebar becomes a drawer, the side panel a full-screen sheet.</li>
+                                <li>Copy answer, keyboard focus pass, reduced motion, and README updated with screenshots.</li>
+                            </ul>
+                            <div class="tags">
+                                <span class="tag">src/components/</span>
+                                <span class="tag">README.md</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- 02 DATA FLOW -->
+            <section>
+                <div class="section-head">
+                    <span class="section-num">02</span>
+                    <h2>Data flow</h2>
+                </div>
+                <p>Four layers, each row one job. Components never call <code>fetch</code>; they go through hooks, which go through the event layer. Solid lines are request/response, dashed are polling or streamed events.</p>
+
+                <div class="flow">
+                    <svg viewBox="0 0 760 450" xmlns="http://www.w3.org/2000/svg" aria-label="Data flow diagram">
+                        <defs>
+                            <marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto">
+                                <path d="M0,0 L10,5 L0,10 z" fill="#1a2e1f" />
+                            </marker>
+                        </defs>
+
+                        <text class="col-label" x="95" y="24" text-anchor="middle">COMPONENTS</text>
+                        <text class="col-label" x="300" y="24" text-anchor="middle">HOOKS + STATE</text>
+                        <text class="col-label" x="500" y="24" text-anchor="middle">EVENT LAYER</text>
+                        <text class="col-label" x="680" y="24" text-anchor="middle">EXISTING</text>
+
+                        <!-- Row 1: backends -->
+                        <rect class="node-new" x="20" y="40" width="150" height="56" />
+                        <text class="node-label" x="95" y="65" text-anchor="middle">&lt;BackendSwitcher&gt;</text>
+                        <text class="node-sub" x="95" y="81" text-anchor="middle">+ AddBackendDialog</text>
+
+                        <rect class="node-new" x="220" y="40" width="160" height="56" />
+                        <text class="node-label" x="300" y="65" text-anchor="middle">backends store</text>
+                        <text class="node-sub" x="300" y="81" text-anchor="middle">src/backends/</text>
+
+                        <rect class="node" x="620" y="40" width="120" height="56" />
+                        <text class="node-label" x="680" y="65" text-anchor="middle">localStorage</text>
+                        <text class="node-sub" x="680" y="81" text-anchor="middle">browser</text>
+
+                        <path class="stroke-solid" d="M170 68 L220 68" marker-end="url(#arrow)" />
+                        <path class="stroke-solid" d="M380 60 L620 60" marker-end="url(#arrow)" />
+                        <text class="edge-label" x="500" y="54" text-anchor="middle">save backends + titles</text>
+
+                        <!-- health poll -->
+                        <path class="stroke-dash" d="M300 96 L300 114 L480 114 L480 150" marker-end="url(#arrow)" />
+                        <text class="edge-label" x="390" y="108" text-anchor="middle">poll /health · 10s</text>
+
+                        <!-- Row 2: sessions -->
+                        <rect class="node-new" x="20" y="150" width="150" height="56" />
+                        <text class="node-label" x="95" y="175" text-anchor="middle">&lt;SessionList&gt;</text>
+                        <text class="node-sub" x="95" y="191" text-anchor="middle">sidebar</text>
+
+                        <rect class="node-new" x="220" y="150" width="160" height="56" />
+                        <text class="node-label" x="300" y="175" text-anchor="middle">useSessions</text>
+                        <text class="node-sub" x="300" y="191" text-anchor="middle">src/sessions/</text>
+
+                        <rect class="node-new" x="430" y="150" width="140" height="56" />
+                        <text class="node-label" x="500" y="175" text-anchor="middle">client.ts</text>
+                        <text class="node-sub" x="500" y="191" text-anchor="middle">src/reigner/</text>
+
+                        <path class="stroke-solid" d="M170 178 L220 178" marker-end="url(#arrow)" />
+                        <path class="stroke-solid" d="M380 178 L430 178" marker-end="url(#arrow)" />
+                        <path class="stroke-solid" d="M570 178 L620 178" marker-end="url(#arrow)" />
+                        <text class="edge-label" x="595" y="170" text-anchor="middle">GET</text>
+
+                        <!-- Row 3: thread -->
+                        <rect class="node-new" x="20" y="260" width="150" height="56" />
+                        <text class="node-label" x="95" y="285" text-anchor="middle">&lt;Thread&gt;</text>
+                        <text class="node-sub" x="95" y="301" text-anchor="middle">rounds · side panel</text>
+
+                        <rect class="node-new" x="220" y="260" width="160" height="56" />
+                        <text class="node-label" x="300" y="285" text-anchor="middle">useThread</text>
+                        <text class="node-sub" x="300" y="301" text-anchor="middle">useReducer</text>
+
+                        <rect class="node-new" x="430" y="260" width="140" height="56" />
+                        <text class="node-label" x="500" y="285" text-anchor="middle">rounds.ts</text>
+                        <text class="node-sub" x="500" y="301" text-anchor="middle">pure reducer</text>
+
+                        <path class="stroke-solid" d="M220 288 L170 288" marker-end="url(#arrow)" />
+                        <text class="edge-label" x="195" y="280" text-anchor="middle">rounds</text>
+                        <path class="stroke-solid" d="M380 288 L430 288" marker-end="url(#arrow)" />
+                        <text class="edge-label" x="405" y="280" text-anchor="middle">apply</text>
+                        <path class="stroke-solid" d="M490 206 L490 260" marker-end="url(#arrow)" />
+                        <text class="edge-label" x="484" y="238" text-anchor="end">replay</text>
+
+                        <!-- Row 4: run -->
+                        <rect class="node-new" x="20" y="370" width="150" height="56" />
+                        <text class="node-label" x="95" y="395" text-anchor="middle">&lt;Composer&gt;</text>
+                        <text class="node-sub" x="95" y="411" text-anchor="middle">send · stop</text>
+
+                        <rect class="node-new" x="220" y="370" width="160" height="56" />
+                        <text class="node-label" x="300" y="395" text-anchor="middle">useRun</text>
+                        <text class="node-sub" x="300" y="411" text-anchor="middle">runs per session</text>
+
+                        <rect class="node-new" x="430" y="370" width="140" height="56" />
+                        <text class="node-label" x="500" y="395" text-anchor="middle">run() + sse.ts</text>
+                        <text class="node-sub" x="500" y="411" text-anchor="middle">fetch stream</text>
+
+                        <path class="stroke-solid" d="M170 398 L220 398" marker-end="url(#arrow)" />
+                        <path class="stroke-solid" d="M380 398 L430 398" marker-end="url(#arrow)" />
+                        <path class="stroke-solid" d="M570 390 L620 390" marker-end="url(#arrow)" />
+                        <text class="edge-label" x="595" y="382" text-anchor="middle">POST</text>
+                        <path class="stroke-dash" d="M620 412 L570 412" marker-end="url(#arrow)" />
+                        <text class="edge-label" x="595" y="426" text-anchor="middle">SSE</text>
+                        <path class="stroke-dash" d="M510 370 L510 316" marker-end="url(#arrow)" />
+                        <text class="edge-label" x="516" y="348">live events</text>
+
+                        <!-- Server -->
+                        <rect class="node" x="620" y="130" width="120" height="300" />
+                        <text class="node-label" x="680" y="156" text-anchor="middle">reigner serve</text>
+                        <text class="node-sub" x="680" y="172" text-anchor="middle">--http :8000</text>
+                        <text class="node-sub" x="632" y="214">/health</text>
+                        <text class="node-sub" x="632" y="232">/sessions</text>
+                        <text class="node-sub" x="632" y="250">/sessions/{id}</text>
+                        <text class="node-sub" x="646" y="264">/events</text>
+                        <text class="node-sub" x="632" y="300">POST /run</text>
+                        <text class="node-sub" x="680" y="420" text-anchor="middle">dev/indialaw</text>
+                    </svg>
+                </div>
+                <div class="legend">
+                    Solid = request/response. Dashed = async / fire-and-forget. Terracotta border = new module.<br />
+                    Live and replayed events go through the same reducer, so a round looks identical either way.
+                </div>
+            </section>
+
+            <!-- 03 MOCKUPS -->
+            <section>
+                <div class="section-head">
+                    <span class="section-num">03</span>
+                    <h2>Mockups</h2>
+                </div>
+                <p>The full design is <code>docs/design/mockup.html</code>. These lo-fi views show which slice builds each region.</p>
+
+                <div class="mock">
+                    <h3>A · App shell, by slice</h3>
+                    <div class="lf lf-shell">
+                        <div class="lf-col">
+                            <div class="lf-box hi"><span class="lf-n">2</span>● indialaw ▾<br /><span class="lf-dim">localhost:8000</span></div>
+                            <div class="lf-box"><span class="lf-n">4</span>New session</div>
+                            <div class="lf-box"><span class="lf-n">3</span>Search sessions</div>
+                            <div class="lf-dim" style="margin:8px 0 4px"><span class="lf-n">3</span>Today</div>
+                            <div class="lf-box">Rule of law concerns</div>
+                            <div class="lf-box" style="margin-left:12px">↳ fork: stricter citations</div>
+                            <div class="lf-dim" style="margin:8px 0 4px">Previous 7 days</div>
+                            <div class="lf-box">What documents do you have?</div>
+                        </div>
+                        <div class="lf-col lf-mid">
+                            <div class="lf-box"><span class="lf-n">3</span>What are the main concerns about the rule of law?</div>
+                            <div class="lf-box"><span class="lf-n">3</span>▸ Searched 2 sources in 6 steps · 4.2s</div>
+                            <div class="lf-box hi"><span class="lf-n">3</span>Answer (Markdown, serif)</div>
+                            <div class="lf-box"><span class="lf-n">3</span>[1] library/artifacts/…  section=…<br />[2] …</div>
+                            <div class="lf-dim" style="margin-bottom:6px">19.2k tokens · end_turn · Copy <span class="lf-n">5</span></div>
+                            <div class="grow"></div>
+                            <div class="lf-box hi"><span class="lf-n">4</span>Ask about your documents … <span style="float:right">[↑] / [■]</span></div>
+                        </div>
+                        <div class="lf-col">
+                            <div class="lf-box hi"><span class="lf-n">3</span>Source 1</div>
+                            <div class="lf-box">value</div>
+                            <div class="lf-box">artifact · locator</div>
+                            <div class="lf-box">{ raw event JSON }</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="mock">
+                    <h3>B · Add backend, server unreachable</h3>
+                    <div class="lf lf-dialog">
+                        <div style="font-size:13px;margin-bottom:6px">Add backend</div>
+                        Server URL
+                        <div class="lf-input">http://localhost:8001</div>
+                        Name (optional)
+                        <div class="lf-input lf-dim">uses the agent name from /health</div>
+                        <div class="lf-warn">No response from this URL. If the server is running, start it with:<br /><code>reigner serve --http --port 8001 --cors-origin http://localhost:5173</code></div>
+                        <div class="lf-btns"><span class="lf-btn">Cancel</span><span class="lf-btn">Save anyway</span><span class="lf-btn p">Check again</span></div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- 04 FILES -->
+            <section>
+                <div class="section-head">
+                    <span class="section-num">04</span>
+                    <h2>Files</h2>
+                </div>
+                <p>Folders by job, not by file type. <code>src/reigner/</code> has no React imports so it can be copied on its own.</p>
+
+                <div class="files">
+                    <div class="file-group">Slice 1 · event layer</div>
+                    <div class="file-row"><span class="file-op op-add">add</span><span><span class="file-path">src/reigner/events.ts</span><span class="file-note">Discriminated union of all 11 event types plus the envelope. Unknown types pass through as <code>UnknownEvent</code> and are ignored.</span></span></div>
+                    <div class="file-row"><span class="file-op op-add">add</span><span><span class="file-path">src/reigner/client.ts</span><span class="file-note"><code>ReignerClient(baseUrl)</code>: <code>health()</code>, <code>listSessions()</code>, <code>getEvents(id, limit?)</code>, <code>run(req, signal)</code>. Turns 404 and 422 into typed errors.</span></span></div>
+                    <div class="file-row"><span class="file-op op-add">add</span><span><span class="file-path">src/reigner/sse.ts</span><span class="file-note">Reads the <code>fetch</code> body stream and yields parsed events, using <code>eventsource-parser</code> for framing.</span></span></div>
+                    <div class="file-row"><span class="file-op op-add">add</span><span><span class="file-path">src/reigner/rounds.ts</span><span class="file-note">Pure reducer <code>applyEvent(thread, event)</code> and <code>replay(events)</code>. The most-copied file in the repo.</span></span></div>
+                    <div class="file-row"><span class="file-op op-add">add</span><span><span class="file-path">src/reigner/toolSummary.ts</span><span class="file-note">Port of <code>reigner/cli/_tool_summary.py</code>: one-line summaries of tool args and results, plus the pseudo-tool list.</span></span></div>
+                    <div class="file-row"><span class="file-op op-add">add</span><span><span class="file-path">src/reigner/*.test.ts + fixtures/</span><span class="file-note">Reducer and parser tests. Fixtures: two saved indialaw sessions (one with citations) and the captured <code>run.sse</code>, plus hand-written edge cases (parallel calls, interrupted round, error frame, unknown type).</span></span></div>
+
+                    <div class="file-group">Slice 2 · backends + shell</div>
+                    <div class="file-row"><span class="file-op op-add">add</span><span><span class="file-path">src/backends/store.ts</span><span class="file-note">Saved backends in <code>localStorage</code> behind <code>useSyncExternalStore</code>, with try/catch so private windows still work.</span></span></div>
+                    <div class="file-row"><span class="file-op op-add">add</span><span><span class="file-path">src/backends/useHealth.ts</span><span class="file-note">Polls every saved backend. Pauses when the tab is hidden.</span></span></div>
+                    <div class="file-row"><span class="file-op op-add">add</span><span><span class="file-path">src/components/shell/*</span><span class="file-note"><code>AppShell</code>, <code>BackendSwitcher</code>, <code>AddBackendDialog</code>, first-run empty state.</span></span></div>
+
+                    <div class="file-group">Slice 3 · sessions + conversation</div>
+                    <div class="file-row"><span class="file-op op-add">add</span><span><span class="file-path">src/sessions/useSessions.ts, titles.ts</span><span class="file-note">List, sort, date groups, fork tree. Titles fetched lazily, a few at a time, cached per backend.</span></span></div>
+                    <div class="file-row"><span class="file-op op-add">add</span><span><span class="file-path">src/components/thread/*</span><span class="file-note"><code>Thread</code>, <code>Round</code>, <code>Trace</code>, <code>Answer</code>, <code>Sources</code>, <code>Clarification</code>, <code>SidePanel</code>.</span></span></div>
+                    <div class="file-row"><span class="file-op op-add">add</span><span><span class="file-path">src/components/sidebar/SessionList.tsx</span><span class="file-note">Grouped list with fork indent and search.</span></span></div>
+
+                    <div class="file-group">Slice 4 · live runs</div>
+                    <div class="file-row"><span class="file-op op-add">add</span><span><span class="file-path">src/runs/useRun.ts</span><span class="file-note">One <code>AbortController</code> per running session. Feeds live events into that session's reducer.</span></span></div>
+                    <div class="file-row"><span class="file-op op-add">add</span><span><span class="file-path">src/components/composer/*, Toasts.tsx</span><span class="file-note">Composer with send and stop, and toasts for errors before the stream starts.</span></span></div>
+
+                    <div class="file-group">Across slices</div>
+                    <div class="file-row"><span class="file-op op-mod">update</span><span><span class="file-path">package.json</span><span class="file-note">Add <code>eventsource-parser</code>, <code>react-markdown</code> + <code>remark-gfm</code>, <code>wouter</code>, and <code>vitest</code>. New <code>test</code> script.</span></span></div>
+                    <div class="file-row"><span class="file-op op-mod">update</span><span><span class="file-path">vite.config.ts</span><span class="file-note">Vitest config.</span></span></div>
+                    <div class="file-row"><span class="file-op op-mod">update</span><span><span class="file-path">src/App.tsx, src/index.css</span><span class="file-note">Routes and shell. Remaining tokens from the mockup: surface, line, hover, status colors.</span></span></div>
+                    <div class="file-row"><span class="file-op op-mod">update</span><span><span class="file-path">README.md</span><span class="file-note"><code>npm test</code>, screenshots, "using the event layer in your own app".</span></span></div>
+                    <div class="file-row"><span class="file-op op-mod">update</span><span><span class="file-path">CLAUDE.md, AGENTS.md</span><span class="file-note">Add <code>npm test</code> to the checks, and the single-test command. Will ask before editing, as the working rules require.</span></span></div>
+                </div>
+            </section>
+
+            <!-- 05 KEY CODE -->
+            <section>
+                <div class="section-head">
+                    <span class="section-num">05</span>
+                    <h2>Key code</h2>
+                </div>
+                <p>The three places most likely to go wrong: the round shape, the reducer, and the stream reader.</p>
+
+                <div class="code-caption">src/reigner/rounds.ts · the round shape</div>
+<pre class="code"><span class="kw">export type</span> RoundStatus =
+  | <span class="str">'running'</span> | <span class="str">'answered'</span> | <span class="str">'clarifying'</span> | <span class="str">'failed'</span> | <span class="str">'interrupted'</span>
+
+<span class="kw">export interface</span> Round {
+  query: <span class="kw">string</span> | <span class="kw">null</span>          <span class="cm">// null when a ?limit= suffix starts mid-round</span>
+  steps: Step[]                  <span class="cm">// tool_call order; result attached by call_id</span>
+  citations: Citation[]          <span class="cm">// deduped on source + canonical locator JSON</span>
+  notices: Notice[]              <span class="cm">// oracle, compaction, steering, status</span>
+  answer?: FinalAnswer
+  clarification?: Clarification
+  error?: { message: <span class="kw">string</span>; recoverable: <span class="kw">boolean</span> }
+  status: RoundStatus
+}</pre>
+
+                <div class="code-caption">src/reigner/rounds.ts · applyEvent</div>
+<pre class="code"><span class="kw">export function</span> <span class="fn">applyEvent</span>(t: Thread, e: ReignerEvent): Thread {
+  <span class="kw">if</span> (e.type === <span class="str">'user_query'</span>) <span class="kw">return</span> <span class="fn">startRound</span>(<span class="fn">closeOpen</span>(t), e.query)
+  <span class="kw">const</span> r = <span class="fn">current</span>(t) ?? <span class="fn">orphanRound</span>()   <span class="cm">// suffix fetched with ?limit=</span>
+  <span class="kw">switch</span> (e.type) {
+    <span class="kw">case</span> <span class="str">'tool_call'</span>:   <span class="kw">return</span> <span class="fn">put</span>(t, { ...r, steps: [...r.steps, <span class="fn">pending</span>(e)] })
+    <span class="kw">case</span> <span class="str">'tool_result'</span>: <span class="cm">// parallel reads finish in any order: match by id</span>
+      <span class="kw">return</span> <span class="fn">put</span>(t, { ...r, steps: r.steps.<span class="fn">map</span>(s =&gt;
+        s.callId === e.call_id ? <span class="fn">complete</span>(s, e) : s) })
+    <span class="kw">case</span> <span class="str">'citation'</span>:    <span class="kw">return</span> <span class="fn">put</span>(t, { ...r, citations: <span class="fn">addUnique</span>(r.citations, e) })
+    <span class="kw">case</span> <span class="str">'final_answer'</span>:  <span class="kw">return</span> <span class="fn">put</span>(t, { ...r, answer: e, status: <span class="str">'answered'</span> })
+    <span class="kw">case</span> <span class="str">'clarification'</span>: <span class="kw">return</span> <span class="fn">put</span>(t, { ...r, clarification: e, status: <span class="str">'clarifying'</span> })
+    <span class="kw">case</span> <span class="str">'error'</span>:       <span class="kw">return</span> <span class="fn">put</span>(t, { ...r, error: <span class="fn">toError</span>(e), status: <span class="str">'failed'</span> })
+    <span class="kw">case</span> <span class="str">'oracle'</span>: <span class="kw">case</span> <span class="str">'compaction'</span>: <span class="kw">case</span> <span class="str">'steering'</span>: <span class="kw">case</span> <span class="str">'status'</span>:
+      <span class="kw">return</span> <span class="fn">put</span>(t, { ...r, notices: [...r.notices, e] })
+    <span class="kw">default</span>: <span class="kw">return</span> t                        <span class="cm">// unknown type: ignore, don't crash</span>
+  }
+}
+<span class="cm">// closeOpen(): a round still 'running' when the next user_query arrives,
+// or at the end of a replay, becomes 'interrupted'.</span></pre>
+
+                <div class="code-caption">src/reigner/client.ts · run()</div>
+<pre class="code"><span class="kw">async function*</span> <span class="fn">run</span>(req: RunRequest, signal: AbortSignal) {
+  <span class="kw">const</span> res = <span class="kw">await</span> <span class="fn">fetch</span>(<span class="str">`${base}/run`</span>, {
+    method: <span class="str">'POST'</span>, signal,                       <span class="cm">// abort = Stop; server halts</span>
+    headers: { <span class="str">'content-type'</span>: <span class="str">'application/json'</span> }, <span class="cm">// no cookies, no auth</span>
+    body: JSON.<span class="fn">stringify</span>({ query: req.query, session_id: req.sessionId ?? <span class="kw">null</span>,
+                          profile: req.profile ?? <span class="str">'full'</span>, state: {} }),
+  })
+  <span class="kw">if</span> (!res.ok) <span class="kw">throw await</span> <span class="fn">httpError</span>(res)    <span class="cm">// 404 unknown session, 422 bad body</span>
+  <span class="kw">yield*</span> <span class="fn">readEvents</span>(res.body!)              <span class="cm">// sse.ts: frames → ReignerEvent</span>
+}</pre>
+            </section>
+
+            <!-- 06 FUTURE SCOPE -->
+            <section>
+                <div class="section-head">
+                    <span class="section-num">06</span>
+                    <h2>Future scope</h2>
+                </div>
+                <p>Out of v1 on purpose, plus the assumptions this plan makes that you may want to change.</p>
+
+                <div class="future-item">
+                    <h3>Assumption: which libraries?</h3>
+                    <p><code>eventsource-parser</code> for stream framing, <code>react-markdown</code> + <code>remark-gfm</code> for answers (no raw HTML, so agent output can't inject markup), <code>wouter</code> for routing (tiny, enough for two routes), plain CSS files with the mockup's tokens instead of Tailwind. Per the working rules, slice 1 starts with a short comparison note for the parser, and slice 3 for Markdown and routing; any of these can change then.</p>
+                    <div class="meta">Decide with · you · start of slice 1 and slice 3</div>
+                </div>
+
+                <div class="future-item">
+                    <h3>Assumption: are real sessions OK as committed test fixtures?</h3>
+                    <p>The fixtures would contain questions and short quoted passages from the IGNOU and Constitution documents in indialaw. If the repo goes public, you may prefer trimmed or hand-written fixtures instead.</p>
+                    <div class="meta">Decide with · you · slice 1</div>
+                </div>
+
+                <div class="future-item">
+                    <h3>Titles cost one request per session</h3>
+                    <p><code>/sessions</code> has no titles, so the sidebar fetches each session's events to read its first question. Cached forever after (questions don't change), and fetched a few at a time, but the first load of a big backend is slow. A server change that returns the first query in <code>/sessions</code>, or a title endpoint, fixes it properly.</p>
+                    <div class="meta">Decide with · Reigner repo · after slice 3</div>
+                </div>
+
+                <div class="future-item">
+                    <h3>Server features the UI can't offer yet</h3>
+                    <p>Delete, rename and fork sessions; open the artifact behind a citation; cost per answer; steering mid-run; auth. Each needs an endpoint in the Reigner repo first. The UI leaves them out instead of faking them.</p>
+                    <div class="meta">Decide with · Reigner repo · after v1</div>
+                </div>
+
+                <div class="future-item">
+                    <h3>No token streaming</h3>
+                    <p>Answers arrive whole. The live activity trace is what shows progress, which fits Reigner's "show your sources" story. Streamed text would need a change in Reigner's model adapters.</p>
+                </div>
+
+                <div class="future-item">
+                    <h3>Cost estimate</h3>
+                    <p>Possible by porting <code>reigner/pricing.py</code> and pairing it with the model from <code>/health</code>, but prices drift and a wrong number is worse than none. Token counts only for v1.</p>
+                </div>
+
+                <div class="future-item">
+                    <h3>Hosting the UI over https</h3>
+                    <p>v1 assumes the UI runs locally next to the servers. A hosted https copy calling <code>http://localhost</code> backends runs into browser mixed-content and private-network rules, which vary by browser. Worth a README note once someone tries it.</p>
+                </div>
+            </section>
+        </div>
+    </body>
+</html>
