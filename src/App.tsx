@@ -6,7 +6,10 @@ import { getLastUsedBackendId, setLastUsedBackendId, useBackends, type Backend }
 import { AppShell } from './components/shell/AppShell'
 import { FirstRun } from './components/shell/FirstRun'
 import { Topbar } from './components/shell/Topbar'
+import { SessionList } from './components/sidebar/SessionList'
+import { ThreadView } from './components/thread/ThreadView'
 import { Crown } from './components/icons'
+import { useSessions } from './sessions/useSessions'
 
 function App() {
   const backends = useBackends()
@@ -54,7 +57,25 @@ function BackendRoute({ backendId, sessionId }: { backendId: string; sessionId?:
     )
   }
 
-  return <AppShell backend={backend}>{sessionId ? null : <NewSession backend={backend} />}</AppShell>
+  return <BackendView key={backend.id} backend={backend} sessionId={sessionId} />
+}
+
+function BackendView({ backend, sessionId }: { backend: Backend; sessionId?: string }) {
+  const { state, refresh } = useSessions(backend)
+  const serverTitle = state.sessions?.find((s) => s.session_id === sessionId)?.title ?? undefined
+
+  return (
+    <AppShell
+      backend={backend}
+      sidebar={<SessionList backend={backend} state={state} activeSessionId={sessionId} onRetry={refresh} />}
+    >
+      {sessionId ? (
+        <ThreadView key={sessionId} backend={backend} sessionId={sessionId} title={serverTitle} />
+      ) : (
+        <NewSession backend={backend} />
+      )}
+    </AppShell>
+  )
 }
 
 function NewSession({ backend }: { backend: Backend }) {

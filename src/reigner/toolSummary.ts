@@ -18,8 +18,16 @@ export function isPseudoTool(name: string): boolean {
   return PSEUDO_TOOLS.has(name)
 }
 
-// Result keys whose value is a list of returned items, rendered as "N label".
-const COUNT_KEYS = ['hits', 'matches', 'rows', 'entities', 'entries', 'paths']
+// Result keys whose value is a list of returned items, rendered as "N label",
+// with the singular label for one item.
+const COUNT_KEYS: Record<string, string> = {
+  hits: 'hit',
+  matches: 'match',
+  rows: 'row',
+  entities: 'entity',
+  entries: 'entry',
+  paths: 'path',
+}
 
 // Result keys carrying a byte or character size.
 const SIZE_KEYS = ['bytes', 'total_size', 'size']
@@ -54,9 +62,9 @@ export function summarizeResult(result: unknown, truncated: boolean): string {
   if (isRecord(result)) {
     // Not in the CLI: tools report failures as {"error": "..."}.
     if (typeof result.error === 'string') parts.push('error')
-    for (const key of COUNT_KEYS) {
-      const items = result[key]
-      if (Array.isArray(items)) parts.push(`${items.length} ${key}`)
+    for (const [plural, singular] of Object.entries(COUNT_KEYS)) {
+      const items = result[plural]
+      if (Array.isArray(items)) parts.push(`${items.length} ${items.length === 1 ? singular : plural}`)
     }
     const size = SIZE_KEYS.map((key) => result[key]).find((v) => typeof v === 'number')
     if (typeof size === 'number') {
@@ -115,11 +123,17 @@ export function summarizeArgs(args: Record<string, unknown>, maxLength = 64): st
   return joined.length > maxLength ? `${joined.slice(0, maxLength - 1).trimEnd()}…` : joined
 }
 
-/** Citation locators as `k=v` pairs, keys sorted, empty values dropped. */
+/**
+ * Citation locators as `k=v` pairs, keys sorted, empty values dropped.
+ * Unlike the CLI, values aren't clipped: a locator is how you find the source.
+ */
 export function formatLocator(locator: Record<string, unknown>): string {
   return Object.keys(locator)
     .sort()
     .filter((key) => !isEmpty(locator[key]))
-    .map((key) => `${key}=${formatScalar(locator[key])}`)
+    .map((key) => {
+      const value = locator[key]
+      return `${key}=${typeof value === 'string' ? value : JSON.stringify(value)}`
+    })
     .join(' ')
 }

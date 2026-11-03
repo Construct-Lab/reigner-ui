@@ -5,6 +5,7 @@ describe('summarizeResult', () => {
   it('counts list results', () => {
     expect(summarizeResult({ hits: [1, 2, 3], has_more: true }, false)).toBe('3 hits · more available')
     expect(summarizeResult({ matches: [] }, false)).toBe('0 matches')
+    expect(summarizeResult({ entities: [1] }, false)).toBe('1 entity')
   })
 
   it('reports sizes from size keys or content', () => {
@@ -15,7 +16,7 @@ describe('summarizeResult', () => {
 
   it('flags truncation with the keys still available', () => {
     expect(summarizeResult({ matches: [1], available_keys: ['offset'] }, true)).toBe(
-      '1 matches · truncated · +["offset"]',
+      '1 match · truncated · +["offset"]',
     )
     expect(summarizeResult({}, true)).toBe('truncated')
   })

@@ -6,8 +6,9 @@ export function formatTokens(n: number): string {
   return `${(n / 1000).toFixed(n < 100_000 ? 1 : 0)}k`
 }
 
-/** 2140 → "2.1s", 65000 → "1m 5s". */
+/** 12 → "12 ms", 2140 → "2.1s", 65000 → "1m 5s". */
 export function formatDuration(ms: number): string {
+  if (ms < 1000) return `${Math.round(ms)} ms`
   if (ms < 60_000) return `${(ms / 1000).toFixed(1)}s`
   const minutes = Math.floor(ms / 60_000)
   return `${minutes}m ${Math.round((ms % 60_000) / 1000)}s`
