@@ -27,7 +27,7 @@ The origin must match exactly, with no trailing slash. A browser cannot tell a C
 
 ## Key references
 
-- `docs/frontend-client-handoff.md`: the HTTP API (`/health`, `POST /run`, `/sessions`, `/sessions/{id}/events`), the event protocol, the v1 feature list, and the server's known gaps. The real source of truth is `reigner/server/fastapi_app.py` and `reigner/harness/events.py` in the Reigner repo (checked out locally at `../reigner`).
+- `docs/frontend-client-handoff.md`: the HTTP API (`/health`, `POST /run`, `/sessions`, `/sessions/{id}/events`), the event protocol, the v1 feature list, and the server's known gaps. The real source of truth is in the [Reigner repo](https://github.com/Construct-Lab/reigner): [`reigner/server/fastapi_app.py`](https://github.com/Construct-Lab/reigner/blob/main/reigner/server/fastapi_app.py) for the endpoints and [`reigner/harness/events.py`](https://github.com/Construct-Lab/reigner/blob/main/reigner/harness/events.py) for the event types. Read them with `gh api repos/Construct-Lab/reigner/contents/<path> --jq .content | base64 -d`. Per-tool step summaries to port live in [`reigner/cli/_tool_summary.py`](https://github.com/Construct-Lab/reigner/blob/main/reigner/cli/_tool_summary.py).
 - `docs/design/mockup.html`: the interactive design. Layout, color tokens, type and component states come from here. `src/index.css` holds the same tokens.
 
 ## Architecture
