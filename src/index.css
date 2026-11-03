@@ -1,0 +1,44 @@
+/* Design tokens. See docs/design/mockup.html for the full design. */
+:root {
+  --ink: #1b1d23;
+  --slate: #4a4d57;
+  --muted: #7b7f8a;
+  --paper: #f5f6f4;
+  --surface: #ffffff;
+  --line: #e3e5e1;
+  --cite: #0e6e66;
+  --oracle: #b4530a;
+
+  --ui: 'Space Grotesk', system-ui, sans-serif;
+  --read: 'Source Serif 4', Georgia, serif;
+  --code: 'JetBrains Mono', ui-monospace, monospace;
+
+  font: 14px/1.5 var(--ui);
+  color: var(--ink);
+  background: var(--paper);
+  -webkit-font-smoothing: antialiased;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --ink: #e9eaec;
+    --slate: #b4b7bf;
+    --muted: #868a95;
+    --paper: #15171c;
+    --surface: #1b1d23;
+    --line: #2a2d35;
+    --cite: #5cc2b5;
+    --oracle: #f0a35e;
+  }
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body,
+#root {
+  height: 100%;
+  margin: 0;
+}

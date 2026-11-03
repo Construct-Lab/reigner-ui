@@ -1,0 +1,564 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Reigner UI mockup</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500&family=Source+Serif+4:opsz,wght@8..60,400;8..60,600&family=Space+Grotesk:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root {
+  --ink: #1b1d23;
+  --slate: #4a4d57;
+  --muted: #7b7f8a;
+  --paper: #f5f6f4;
+  --surface: #ffffff;
+  --line: #e3e5e1;
+  --line-strong: #cfd2cc;
+  --hover: #eceeea;
+  --cite: #0e6e66;
+  --cite-soft: #e3f1ef;
+  --oracle: #b4530a;
+  --oracle-soft: #fbeee2;
+  --ok: #2f8a4c;
+  --down: #b3261e;
+  --down-soft: #fbe9e7;
+  --shadow: 0 8px 28px rgba(27,29,35,.12), 0 1px 3px rgba(27,29,35,.08);
+  --ui: "Space Grotesk", system-ui, sans-serif;
+  --read: "Source Serif 4", Georgia, serif;
+  --code: "JetBrains Mono", ui-monospace, monospace;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --ink: #e9eaec; --slate: #b4b7bf; --muted: #868a95;
+    --paper: #15171c; --surface: #1b1d23; --line: #2a2d35; --line-strong: #3a3d47; --hover: #23262d;
+    --cite: #5cc2b5; --cite-soft: #173431; --oracle: #f0a35e; --oracle-soft: #3a2816;
+    --ok: #5cc27a; --down: #f08a80; --down-soft: #3a1d1b;
+    --shadow: 0 8px 28px rgba(0,0,0,.45);
+  }
+}
+:root[data-theme="dark"] {
+  --ink: #e9eaec; --slate: #b4b7bf; --muted: #868a95;
+  --paper: #15171c; --surface: #1b1d23; --line: #2a2d35; --line-strong: #3a3d47; --hover: #23262d;
+  --cite: #5cc2b5; --cite-soft: #173431; --oracle: #f0a35e; --oracle-soft: #3a2816;
+  --ok: #5cc27a; --down: #f08a80; --down-soft: #3a1d1b;
+  --shadow: 0 8px 28px rgba(0,0,0,.45);
+}
+
+* { box-sizing: border-box; }
+html, body { height: 100%; margin: 0; }
+body { background: var(--paper); color: var(--ink); font: 14px/1.5 var(--ui); -webkit-font-smoothing: antialiased; }
+button { font: inherit; color: inherit; background: none; border: 0; cursor: pointer; }
+:focus-visible { outline: 2px solid var(--cite); outline-offset: 2px; border-radius: 6px; }
+code, .mono { font-family: var(--code); font-size: 12.5px; }
+
+.app { display: grid; grid-template-columns: 272px 1fr auto; grid-template-rows: minmax(0, 1fr); height: 100vh; }
+.scroll { min-height: 0; }
+
+/* Sidebar */
+.side { border-right: 1px solid var(--line); display: flex; flex-direction: column; min-width: 0; position: relative; }
+.backend { margin: 12px; padding: 10px 12px; border-radius: 10px; display: flex; gap: 10px; align-items: center; text-align: left; width: calc(100% - 24px); }
+.backend:hover, .backend[aria-expanded="true"] { background: var(--hover); }
+.crown { width: 28px; height: 28px; flex: none; color: var(--ink); }
+.backend .who { min-width: 0; flex: 1; }
+.backend .name { font-weight: 600; display: flex; align-items: center; gap: 6px; }
+.backend .url { color: var(--muted); font-size: 12px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.dot { width: 7px; height: 7px; border-radius: 50%; background: var(--ok); flex: none; }
+.dot.down { background: var(--down); }
+.dot.wait { background: var(--muted); }
+.chev { color: var(--muted); }
+
+.side-actions { display: flex; gap: 6px; padding: 0 12px 8px; }
+.btn { display: inline-flex; align-items: center; gap: 8px; padding: 8px 12px; border-radius: 8px; border: 1px solid var(--line-strong); background: var(--surface); font-weight: 500; }
+.btn:hover { border-color: var(--slate); }
+.btn.primary { background: var(--ink); color: var(--paper); border-color: var(--ink); }
+.side-actions .btn { flex: 1; justify-content: flex-start; }
+.icon-btn { width: 36px; height: 36px; display: grid; place-items: center; border-radius: 8px; color: var(--slate); }
+.icon-btn:hover { background: var(--hover); color: var(--ink); }
+
+.search { margin: 0 12px 6px; display: flex; align-items: center; gap: 8px; padding: 7px 10px; border-radius: 8px; color: var(--muted); background: var(--hover); }
+.search input { border: 0; background: none; outline: none; font: inherit; color: var(--ink); width: 100%; }
+
+.sessions { overflow-y: auto; flex: 1; padding: 4px 8px 12px; }
+.group { color: var(--muted); font-size: 12px; padding: 14px 8px 4px; }
+.sess { display: block; width: 100%; text-align: left; padding: 7px 10px; border-radius: 8px; color: var(--slate); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.sess:hover { background: var(--hover); color: var(--ink); }
+.sess[aria-current="true"] { background: var(--surface); color: var(--ink); box-shadow: inset 0 0 0 1px var(--line); }
+.sess.fork { padding-left: 26px; position: relative; }
+.sess.fork::before { content: ""; position: absolute; left: 14px; top: 6px; width: 7px; height: 9px; border-left: 1px solid var(--line-strong); border-bottom: 1px solid var(--line-strong); border-bottom-left-radius: 4px; }
+
+.side-foot { border-top: 1px solid var(--line); padding: 10px 12px; display: flex; align-items: center; justify-content: space-between; color: var(--muted); font-size: 12px; }
+
+/* Backend switcher popover */
+.pop { position: absolute; top: 64px; left: 12px; width: 340px; background: var(--surface); border: 1px solid var(--line); border-radius: 12px; box-shadow: var(--shadow); padding: 6px; z-index: 20; display: none; }
+.pop.open { display: block; }
+.pop-h { padding: 8px 10px 6px; color: var(--muted); font-size: 12px; }
+.be { display: grid; grid-template-columns: 10px 1fr auto; gap: 4px 10px; align-items: center; padding: 9px 10px; border-radius: 8px; width: 100%; text-align: left; }
+.be:hover { background: var(--hover); }
+.be .n { font-weight: 500; }
+.be .u { grid-column: 2 / 4; color: var(--muted); font-size: 12px; }
+.be .m { color: var(--muted); font-size: 12px; }
+.be.off .n { color: var(--slate); }
+.be .tag { font-size: 11px; color: var(--down); background: var(--down-soft); padding: 1px 7px; border-radius: 99px; }
+.be .check { color: var(--cite); }
+.pop hr { border: 0; border-top: 1px solid var(--line); margin: 6px 0; }
+.pop .add { display: flex; gap: 10px; align-items: center; padding: 9px 10px; border-radius: 8px; width: 100%; color: var(--slate); }
+.pop .add:hover { background: var(--hover); color: var(--ink); }
+
+/* Main thread */
+.main { display: flex; flex-direction: column; min-width: 0; }
+.topbar { height: 56px; display: flex; align-items: center; justify-content: space-between; padding: 0 20px; border-bottom: 1px solid var(--line); gap: 12px; }
+.topbar h1 { font-size: 15px; font-weight: 500; margin: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.topbar .meta { display: flex; gap: 8px; align-items: center; color: var(--muted); font-size: 12px; }
+.pill { border: 1px solid var(--line); padding: 3px 9px; border-radius: 99px; white-space: nowrap; }
+
+.scroll { flex: 1; overflow-y: auto; }
+.thread { max-width: 760px; margin: 0 auto; padding: 32px 24px 24px; }
+.round { padding-bottom: 36px; }
+.round + .round { border-top: 1px solid var(--line); padding-top: 32px; }
+.q { font-size: 19px; font-weight: 500; letter-spacing: -.01em; margin: 0 0 14px; line-height: 1.35; }
+
+.trace { border: 1px solid var(--line); border-radius: 10px; background: var(--surface); margin-bottom: 20px; }
+.trace-h { display: flex; width: 100%; align-items: center; gap: 10px; padding: 9px 12px; color: var(--slate); font-size: 13px; }
+.trace-h .caret { transition: transform .15s; color: var(--muted); }
+.trace[data-open="true"] .trace-h .caret { transform: rotate(90deg); }
+.trace-h .t-right { margin-left: auto; color: var(--muted); }
+.steps { display: none; border-top: 1px solid var(--line); padding: 6px; }
+.trace[data-open="true"] .steps { display: block; }
+.step { display: grid; grid-template-columns: 16px 1fr auto; gap: 10px; align-items: baseline; padding: 6px 8px; border-radius: 6px; width: 100%; text-align: left; font-size: 13px; }
+.step:hover { background: var(--hover); }
+.step .tool { font-family: var(--code); font-size: 12.5px; color: var(--ink); }
+.step .arg { color: var(--slate); }
+.step .res { color: var(--muted); white-space: nowrap; }
+.step .ok { color: var(--ok); }
+.badge { font-size: 11px; padding: 1px 6px; border-radius: 4px; background: var(--hover); color: var(--slate); margin-left: 6px; }
+.step.oracle { color: var(--oracle); background: var(--oracle-soft); }
+.step.oracle:hover { background: var(--oracle-soft); }
+.step.oracle .arg { color: var(--oracle); }
+.spinner { width: 12px; height: 12px; border: 1.5px solid var(--line-strong); border-top-color: var(--cite); border-radius: 50%; animation: spin .8s linear infinite; display: inline-block; }
+@keyframes spin { to { transform: rotate(360deg); } }
+@media (prefers-reduced-motion: reduce) { .spinner { animation: none; } .trace-h .caret { transition: none; } }
+
+.answer { font-family: var(--read); font-size: 17px; line-height: 1.65; max-width: 66ch; }
+.answer p { margin: 0 0 14px; }
+.answer sup { font-family: var(--ui); font-size: 11px; font-weight: 600; color: var(--cite); padding: 0 1px; }
+
+.sources { margin-top: 18px; display: grid; gap: 8px; }
+.src { display: grid; grid-template-columns: 26px 1fr; gap: 12px; text-align: left; padding: 12px 14px; border-radius: 10px; border: 1px solid var(--line); background: var(--surface); width: 100%; }
+.src:hover { border-color: var(--cite); }
+.src[aria-pressed="true"] { border-color: var(--cite); box-shadow: inset 3px 0 0 var(--cite); }
+.src .num { width: 22px; height: 22px; border-radius: 6px; background: var(--cite-soft); color: var(--cite); font-weight: 600; font-size: 12px; display: grid; place-items: center; }
+.src .path { font-family: var(--code); font-size: 12.5px; color: var(--ink); }
+.src .loc { color: var(--muted); font-size: 12px; margin-left: 8px; }
+.src .val { margin-top: 3px; color: var(--slate); font-family: var(--read); font-size: 15px; }
+
+.foot { margin-top: 14px; color: var(--muted); font-size: 12px; display: flex; gap: 14px; align-items: center; }
+.foot button { color: var(--muted); }
+.foot button:hover { color: var(--ink); }
+
+.clar { border: 1px solid var(--line); border-radius: 10px; padding: 14px 16px; background: var(--surface); }
+.clar p { margin: 0 0 12px; font-family: var(--read); font-size: 17px; }
+.chips { display: flex; flex-wrap: wrap; gap: 8px; }
+.chip { padding: 6px 12px; border-radius: 99px; border: 1px solid var(--line-strong); }
+.chip:hover { border-color: var(--cite); color: var(--cite); }
+
+/* Composer */
+.composer-wrap { padding: 0 24px 20px; }
+.composer { max-width: 760px; margin: 0 auto; border: 1px solid var(--line-strong); border-radius: 14px; background: var(--surface); padding: 12px 12px 10px 16px; box-shadow: 0 1px 2px rgba(27,29,35,.04); }
+.composer:focus-within { border-color: var(--slate); }
+.composer textarea { width: 100%; border: 0; outline: none; resize: none; background: none; font: 15px/1.5 var(--ui); color: var(--ink); min-height: 24px; }
+.composer textarea::placeholder { color: var(--muted); }
+.c-row { display: flex; align-items: center; gap: 8px; margin-top: 6px; }
+.c-row .hint { color: var(--muted); font-size: 12px; }
+.send { margin-left: auto; width: 34px; height: 34px; border-radius: 9px; background: var(--ink); color: var(--paper); display: grid; place-items: center; }
+.send.stop { background: var(--surface); color: var(--ink); border: 1px solid var(--line-strong); }
+.select { display: inline-flex; gap: 6px; align-items: center; padding: 4px 8px; border-radius: 6px; color: var(--slate); font-size: 12px; }
+.select:hover { background: var(--hover); }
+
+/* Inspector */
+.inspector { width: 0; overflow: hidden; border-left: 1px solid transparent; background: var(--surface); transition: width .18s ease; }
+.inspector.open { width: 380px; border-left-color: var(--line); }
+@media (prefers-reduced-motion: reduce) { .inspector { transition: none; } }
+.insp-in { width: 380px; height: 100%; display: flex; flex-direction: column; }
+.insp-h { height: 56px; display: flex; align-items: center; justify-content: space-between; padding: 0 12px 0 18px; border-bottom: 1px solid var(--line); font-weight: 500; }
+.insp-b { padding: 18px; overflow-y: auto; }
+.insp-b dl { margin: 0; display: grid; grid-template-columns: 82px 1fr; gap: 10px 12px; font-size: 13px; }
+.insp-b dt { color: var(--muted); }
+.insp-b dd { margin: 0; word-break: break-all; }
+.insp-b .big { font-family: var(--read); font-size: 22px; margin: 4px 0 18px; }
+pre.json { margin: 18px 0 0; padding: 12px; background: var(--paper); border: 1px solid var(--line); border-radius: 8px; font: 12px/1.55 var(--code); overflow-x: auto; color: var(--slate); }
+.insp-note { margin-top: 14px; color: var(--muted); font-size: 12px; }
+
+/* Add-backend dialog */
+.scrim { position: fixed; inset: 0; background: rgba(21,23,28,.45); display: none; place-items: center; z-index: 40; padding: 16px; }
+.scrim.open { display: grid; }
+.dialog { width: 100%; max-width: 480px; background: var(--surface); border-radius: 14px; box-shadow: var(--shadow); padding: 22px; }
+.dialog h2 { margin: 0 0 4px; font-size: 18px; font-weight: 600; letter-spacing: -.01em; }
+.dialog .sub { margin: 0 0 18px; color: var(--muted); }
+.field { display: grid; gap: 6px; margin-bottom: 14px; }
+.field label { font-weight: 500; font-size: 13px; }
+.field input { font: 14px var(--ui); padding: 9px 11px; border: 1px solid var(--line-strong); border-radius: 8px; background: var(--paper); color: var(--ink); outline: none; }
+.field input:focus { border-color: var(--slate); }
+.probe { display: flex; gap: 10px; align-items: flex-start; padding: 10px 12px; border-radius: 8px; background: var(--down-soft); color: var(--ink); font-size: 13px; margin-bottom: 14px; }
+.probe .dot { margin-top: 6px; }
+.probe code { display: block; margin-top: 6px; padding: 6px 8px; background: var(--surface); border-radius: 6px; color: var(--slate); }
+.dialog .row { display: flex; justify-content: flex-end; gap: 8px; margin-top: 6px; }
+
+/* Mockup chrome: state switcher, not part of the product */
+.states { position: fixed; bottom: 14px; right: 14px; display: flex; gap: 4px; background: var(--ink); color: var(--paper); border-radius: 10px; padding: 4px; font-size: 12px; z-index: 50; box-shadow: var(--shadow); }
+.states button { color: var(--paper); padding: 5px 9px; border-radius: 7px; opacity: .7; }
+.states button[aria-pressed="true"] { background: rgba(255,255,255,.14); opacity: 1; }
+
+.empty { height: 100%; display: grid; place-items: center; text-align: center; padding: 24px; }
+.empty .crown { width: 44px; height: 44px; margin: 0 auto 14px; }
+.empty h2 { margin: 0 0 6px; font-size: 22px; font-weight: 600; letter-spacing: -.02em; }
+.empty p { margin: 0; color: var(--muted); max-width: 42ch; }
+
+.offline-bar { display: none; align-items: center; gap: 10px; padding: 9px 20px; background: var(--down-soft); color: var(--ink); font-size: 13px; border-bottom: 1px solid var(--line); }
+.offline-bar button { margin-left: auto; text-decoration: underline; }
+body[data-state="offline"] .offline-bar { display: flex; }
+body[data-state="offline"] .composer { opacity: .55; pointer-events: none; }
+body[data-state="offline"] .backend .dot { background: var(--down); }
+
+[data-show] { display: none; }
+body[data-state="thread"] [data-show~="thread"],
+body[data-state="running"] [data-show~="running"],
+body[data-state="offline"] [data-show~="thread"],
+body[data-state="empty"] [data-show~="empty"] { display: revert; }
+body[data-state="empty"] .scroll[data-show~="empty"] { display: block; }
+
+@media (max-width: 1100px) { .inspector.open { position: fixed; right: 0; top: 0; bottom: 0; z-index: 30; box-shadow: var(--shadow); } }
+@media (max-width: 760px) {
+  .app { grid-template-columns: 1fr; }
+  .side { display: none; }
+  .thread { padding: 20px 16px; }
+  .composer-wrap { padding: 0 16px 16px; }
+  .topbar { padding: 0 16px; }
+  .inspector.open, .insp-in { width: 100%; }
+  .topbar .meta .pill:not(:first-child) { display: none; }
+}
+</style>
+</head>
+<body data-state="thread">
+
+<svg width="0" height="0" style="position:absolute">
+  <symbol id="crown" viewBox="0 0 200 145">
+    <path d="M8,118 L15,28 L38,90 L54,52 L78,96 L100,14 L122,96 L146,52 L162,90 L185,28 L192,118 Z" fill="currentColor"/>
+    <rect x="8" y="116" width="184" height="27" rx="3" fill="currentColor"/>
+    <path d="M100,46 L114,72 L100,104 L86,72 Z" fill="var(--paper)" opacity=".35"/>
+  </symbol>
+</svg>
+
+<div class="app">
+  <aside class="side">
+    <button class="backend" id="beBtn" aria-expanded="false" aria-haspopup="true">
+      <svg class="crown"><use href="#crown"/></svg>
+      <span class="who">
+        <span class="name"><span class="dot"></span>sec-filings</span>
+        <span class="url">localhost:8000</span>
+      </span>
+      <svg class="chev" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m7 15 5 5 5-5M7 9l5-5 5 5"/></svg>
+    </button>
+
+    <div class="pop" id="pop" role="menu">
+      <div class="pop-h">Backends</div>
+      <button class="be" role="menuitem">
+        <span class="dot"></span><span class="n">sec-filings</span>
+        <svg class="check" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M5 12l5 5L20 7"/></svg>
+        <span class="u">localhost:8000 · claude-sonnet-4-6</span>
+      </button>
+      <button class="be" role="menuitem">
+        <span class="dot"></span><span class="n">india-law</span><span></span>
+        <span class="u">localhost:8081 · gpt-5-mini</span>
+      </button>
+      <button class="be off" role="menuitem">
+        <span class="dot down"></span><span class="n">support-docs</span><span class="tag">Unreachable</span>
+        <span class="u">http://10.0.4.12:8000 · last seen 2 days ago</span>
+      </button>
+      <hr>
+      <button class="add" id="addBtn">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 5v14M5 12h14"/></svg>
+        Add backend
+      </button>
+    </div>
+
+    <div class="side-actions">
+      <button class="btn" data-goto="empty">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 20h9M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg>
+        New session
+      </button>
+    </div>
+    <label class="search">
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
+      <input placeholder="Search sessions">
+    </label>
+
+    <nav class="sessions">
+      <div class="group">Today</div>
+      <button class="sess" aria-current="true">Apple's 2024 revenue and how it compares to Microsoft</button>
+      <button class="sess fork">Same question, oracle forced on</button>
+      <button class="sess">Risk factors mentioning supply chain</button>
+      <div class="group">Yesterday</div>
+      <button class="sess">Which filings cover fiscal 2023?</button>
+      <button class="sess">Nvidia data center segment growth</button>
+      <div class="group">Last week</div>
+      <button class="sess">Compare R&amp;D spend across the big five</button>
+      <button class="sess">Litigation disclosures in Meta's 10-K</button>
+      <button class="sess">Dividend policy changes since 2022</button>
+    </nav>
+
+    <div class="side-foot">
+      <span>reigner 0.12.0</span>
+      <button class="icon-btn" id="themeBtn" aria-label="Toggle theme">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8Z"/></svg>
+      </button>
+    </div>
+  </aside>
+
+  <main class="main">
+    <header class="topbar">
+      <h1 data-show="thread running">Apple's 2024 revenue and how it compares to Microsoft</h1>
+      <h1 data-show="empty">New session</h1>
+      <div class="meta">
+        <span class="pill">anthropic/claude-sonnet-4-6</span>
+        <span class="pill" data-show="thread running">2 rounds · 21.4k tokens</span>
+      </div>
+    </header>
+    <div class="offline-bar">
+      <span class="dot down"></span>
+      Can't reach localhost:8000. Check that <code>reigner serve --http</code> is running and allows this origin.
+      <button>Retry now</button>
+    </div>
+
+    <div class="scroll" data-show="thread running">
+      <div class="thread">
+
+        <section class="round">
+          <h2 class="q">What was Apple's revenue in fiscal 2024?</h2>
+
+          <div class="trace" data-open="false">
+            <button class="trace-h" aria-expanded="false">
+              <svg class="caret" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="m9 6 6 6-6 6"/></svg>
+              Searched 3 sources in 4 steps
+              <span class="t-right">2.1s</span>
+            </button>
+            <div class="steps">
+              <button class="step" data-insp="step"><span class="ok">✓</span><span><span class="tool">bm25_search</span> <span class="arg">"apple revenue fiscal 2024"</span></span><span class="res">8 hits</span></button>
+              <button class="step" data-insp="step"><span class="ok">✓</span><span><span class="tool">list_versions</span> <span class="arg">AAPL</span></span><span class="res">3 versions</span></button>
+              <button class="step" data-insp="step"><span class="ok">✓</span><span><span class="tool">get_json_field</span> <span class="arg">AAPL/2024/metadata.json · revenue</span></span><span class="res">1 field<span class="badge">cached</span></span></button>
+              <button class="step" data-insp="step"><span class="ok">✓</span><span><span class="tool">get_section</span> <span class="arg">AAPL/2024/sections/mdna</span></span><span class="res">2.4k chars<span class="badge">truncated</span></span></button>
+            </div>
+          </div>
+
+          <div class="answer">
+            <p>Apple reported total net sales of <strong>$391.0 billion</strong> for fiscal 2024, up about 2% from $383.3 billion in fiscal 2023.<sup>1</sup><sup>2</sup> Services drove most of the growth, reaching $96.2 billion, while iPhone revenue was roughly flat.<sup>3</sup></p>
+          </div>
+
+          <div class="sources">
+            <button class="src" data-insp="src" aria-pressed="true">
+              <span class="num">1</span>
+              <span><span class="path">AAPL/2024/metadata.json</span><span class="loc">field=revenue</span><div class="val">391,035,000,000</div></span>
+            </button>
+            <button class="src" data-insp="src">
+              <span class="num">2</span>
+              <span><span class="path">AAPL/2023/metadata.json</span><span class="loc">field=revenue</span><div class="val">383,285,000,000</div></span>
+            </button>
+            <button class="src" data-insp="src">
+              <span class="num">3</span>
+              <span><span class="path">AAPL/2024/sections/mdna</span><span class="loc">line=118</span><div class="val">"Services net sales increased 13% to $96.2 billion…"</div></span>
+            </button>
+          </div>
+
+          <div class="foot">
+            <span>9.5k tokens</span><span>end_turn</span>
+            <button aria-label="Copy answer">Copy</button>
+          </div>
+        </section>
+
+        <section class="round" data-show="thread">
+          <h2 class="q">How does that compare to Microsoft?</h2>
+          <div class="trace" data-open="true">
+            <button class="trace-h" aria-expanded="true">
+              <svg class="caret" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="m9 6 6 6-6 6"/></svg>
+              Searched 2 sources in 3 steps, escalated once
+              <span class="t-right">6.8s</span>
+            </button>
+            <div class="steps">
+              <button class="step" data-insp="step"><span class="ok">✓</span><span><span class="tool">filtered_search</span> <span class="arg">ticker=MSFT · "total revenue"</span></span><span class="res">5 hits</span></button>
+              <button class="step" data-insp="step"><span class="ok">✓</span><span><span class="tool">get_json_field</span> <span class="arg">MSFT/2024/metadata.json · revenue</span></span><span class="res">1 field</span></button>
+              <button class="step oracle"><span>⤴</span><span>Escalated to <span class="tool" style="color:inherit">claude-opus-5-5</span> <span class="arg">fiscal years end in different months</span></span><span class="res"></span></button>
+            </div>
+          </div>
+          <div class="clar">
+            <p>Apple's fiscal year ends in September and Microsoft's ends in June. Which comparison do you want?</p>
+            <div class="chips">
+              <button class="chip">Each company's own fiscal 2024</button>
+              <button class="chip">Calendar 2024, by quarter</button>
+            </div>
+          </div>
+        </section>
+
+        <section class="round" data-show="running">
+          <h2 class="q">How does that compare to Microsoft?</h2>
+          <div class="trace" data-open="true">
+            <button class="trace-h" aria-expanded="true">
+              <span class="spinner"></span>
+              Searching
+              <span class="t-right">1.2s</span>
+            </button>
+            <div class="steps">
+              <button class="step"><span class="ok">✓</span><span><span class="tool">filtered_search</span> <span class="arg">ticker=MSFT · "total revenue"</span></span><span class="res">5 hits</span></button>
+              <button class="step"><span class="spinner"></span><span><span class="tool">get_json_field</span> <span class="arg">MSFT/2024/metadata.json · revenue</span></span><span class="res"></span></button>
+            </div>
+          </div>
+        </section>
+
+      </div>
+    </div>
+
+    <div class="scroll" data-show="empty">
+      <div class="empty">
+        <div>
+          <svg class="crown"><use href="#crown"/></svg>
+          <h2>Ask sec-filings</h2>
+          <p>Answers come from the documents this agent has ingested, and every claim links to its source.</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="composer-wrap">
+      <div class="composer">
+        <textarea rows="1" placeholder="Ask about your documents" data-show="thread empty offline"></textarea>
+        <textarea rows="1" placeholder="Waiting for the answer…" disabled data-show="running"></textarea>
+        <div class="c-row">
+          <button class="select" data-show="empty">Profile: full
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m6 9 6 6 6-6"/></svg></button>
+          <span class="hint" data-show="thread">Enter to send, Shift+Enter for a new line</span>
+          <span class="hint" data-show="running">Stopping keeps the steps found so far</span>
+          <button class="send" aria-label="Send" data-show="thread empty offline">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M12 19V5M5 12l7-7 7 7"/></svg>
+          </button>
+          <button class="send stop" aria-label="Stop" data-show="running">
+            <svg width="12" height="12" viewBox="0 0 24 24"><rect x="4" y="4" width="16" height="16" rx="2" fill="currentColor"/></svg>
+          </button>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <aside class="inspector open" id="insp">
+    <div class="insp-in">
+      <div class="insp-h"><span id="inspTitle">Source 1</span>
+        <button class="icon-btn" id="inspClose" aria-label="Close panel">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 6l12 12M18 6 6 18"/></svg>
+        </button>
+      </div>
+      <div class="insp-b" id="inspSrc">
+        <div class="big">391,035,000,000</div>
+        <dl>
+          <dt>Artifact</dt><dd class="mono">AAPL/2024/metadata.json</dd>
+          <dt>Locator</dt><dd class="mono">field=revenue</dd>
+          <dt>Cited in</dt><dd>Round 1, first sentence</dd>
+        </dl>
+<pre class="json">{
+  "type": "citation",
+  "seq": 9,
+  "source": "AAPL/2024/metadata.json",
+  "locator": { "field": "revenue" },
+  "value": 391035000000
+}</pre>
+        <p class="insp-note">The server doesn't expose artifact contents yet, so the cited value is the full preview.</p>
+      </div>
+      <div class="insp-b" id="inspStep" hidden>
+        <dl>
+          <dt>Tool</dt><dd class="mono">get_json_field</dd>
+          <dt>Duration</dt><dd>142 ms</dd>
+          <dt>Flags</dt><dd>cached</dd>
+        </dl>
+<pre class="json">// args
+{
+  "path": "AAPL/2024/metadata.json",
+  "field": "revenue"
+}
+
+// result
+{
+  "value": 391035000000,
+  "available_keys": ["revenue", "net_income",
+    "fiscal_year_end", "segments"],
+  "truncated": false
+}</pre>
+      </div>
+    </div>
+  </aside>
+</div>
+
+<div class="scrim" id="scrim">
+  <div class="dialog" role="dialog" aria-modal="true" aria-labelledby="dlgT">
+    <h2 id="dlgT">Add backend</h2>
+    <p class="sub">Connect to a running <code>reigner serve --http</code> server.</p>
+    <div class="field"><label for="u">Server URL</label><input id="u" value="http://localhost:8082"></div>
+    <div class="field"><label for="l">Name <span style="color:var(--muted);font-weight:400">(optional, defaults to the agent name)</span></label><input id="l" placeholder="research-papers"></div>
+    <div class="probe">
+      <span class="dot down"></span>
+      <div>No response from this URL. If the server is running, it needs to allow this page's origin:
+        <code>reigner serve --http --port 8082 --cors-origin http://localhost:5173</code></div>
+    </div>
+    <div class="row">
+      <button class="btn" id="dlgCancel">Cancel</button>
+      <button class="btn">Save anyway</button>
+      <button class="btn primary">Check again</button>
+    </div>
+  </div>
+</div>
+
+<div class="states" role="group" aria-label="Mockup states">
+  <button data-goto="thread" aria-pressed="true">Thread</button>
+  <button data-goto="running">Running</button>
+  <button data-goto="empty">New</button>
+  <button data-goto="offline">Offline</button>
+  <button id="stAdd">Add backend</button>
+</div>
+
+<script>
+const $ = s => document.querySelector(s);
+const pop = $('#pop'), beBtn = $('#beBtn'), insp = $('#insp'), scrim = $('#scrim');
+
+beBtn.onclick = e => { e.stopPropagation(); const o = pop.classList.toggle('open'); beBtn.setAttribute('aria-expanded', o); };
+document.addEventListener('click', e => { if (!pop.contains(e.target)) { pop.classList.remove('open'); beBtn.setAttribute('aria-expanded', false); } });
+
+const openAdd = () => { pop.classList.remove('open'); scrim.classList.add('open'); $('#u').focus(); };
+$('#addBtn').onclick = openAdd; $('#stAdd').onclick = openAdd;
+$('#dlgCancel').onclick = () => scrim.classList.remove('open');
+scrim.onclick = e => { if (e.target === scrim) scrim.classList.remove('open'); };
+document.addEventListener('keydown', e => { if (e.key === 'Escape') { scrim.classList.remove('open'); pop.classList.remove('open'); } });
+
+document.querySelectorAll('.trace-h').forEach(h => h.onclick = () => {
+  const t = h.closest('.trace'), o = t.dataset.open !== 'true';
+  t.dataset.open = o; h.setAttribute('aria-expanded', o);
+});
+
+document.querySelectorAll('[data-insp]').forEach(el => el.onclick = () => {
+  const isSrc = el.dataset.insp === 'src';
+  document.querySelectorAll('.src').forEach(s => s.setAttribute('aria-pressed', s === el));
+  $('#inspSrc').hidden = !isSrc; $('#inspStep').hidden = isSrc;
+  $('#inspTitle').textContent = isSrc ? 'Source ' + el.querySelector('.num').textContent : 'Step';
+  insp.classList.add('open');
+});
+$('#inspClose').onclick = () => { insp.classList.remove('open'); document.querySelectorAll('.src').forEach(s => s.setAttribute('aria-pressed', false)); };
+
+document.querySelectorAll('[data-goto]').forEach(b => b.onclick = () => {
+  document.body.dataset.state = b.dataset.goto;
+  document.querySelectorAll('.states [data-goto]').forEach(x => x.setAttribute('aria-pressed', x.dataset.goto === b.dataset.goto));
+  if (b.dataset.goto !== 'thread') insp.classList.remove('open');
+});
+
+$('#themeBtn').onclick = () => {
+  const r = document.documentElement;
+  const dark = r.dataset.theme ? r.dataset.theme === 'dark' : matchMedia('(prefers-color-scheme: dark)').matches;
+  r.dataset.theme = dark ? 'light' : 'dark';
+};
+</script>
+</body>
+</html>
